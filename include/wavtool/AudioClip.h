@@ -19,7 +19,7 @@ namespace wavtool {
         std::vector<int16_t> leftChannel;
         std::vector<int16_t> rightChannel;
 
-        std::string clipName = "Default";
+        std::string clipName = " ";
         std::string originalFilePath = "";
 
     public:

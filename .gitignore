@@ -17,3 +17,6 @@ CMakeCache.txt
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Testing
+test_output/

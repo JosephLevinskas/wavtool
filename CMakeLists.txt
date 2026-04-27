@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Core library
 # Creates library target which is reusable
 add_library(wavtool_core 
-    src/AudioClip.cpp 
+    src/AudioClip.cpp
+    src/WavFile.cpp 
 )
 
 # Anyone using wavtool_core can include headers from /include
@@ -28,11 +29,20 @@ target_link_libraries(wavtool_cli
     PRIVATE wavtool_core 
 )
 
-# make executable so run tests from
-add_executable(wavtool_tests
-    tests/AudioClipTests.cpp 
+# make executable to test audioClip class from
+add_executable(audio_clip_tests
+    tests/AudioClipTests.cpp
 )
 # link so wavtool_tests can access code library
-target_link_libraries(wavtool_tests
+target_link_libraries(audio_clip_tests
+    PRIVATE wavtool_core
+)
+
+# Testing exe for wav file save and load 
+add_executable(wav_file_tests
+    tests/WavFileTests.cpp
+)
+# link to wav testing
+target_link_libraries(wav_file_tests
     PRIVATE wavtool_core
 )
