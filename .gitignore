@@ -1,0 +1,19 @@
+# Build files
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+# Visual Studio / VSCode
+.vscode/
+*.vcxproj*
+*.sln
+
+# Binaries
+*.exe
+*.dll
+*.lib
+
+# OS junk
+.DS_Store
+Thumbs.db
