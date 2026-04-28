@@ -11,6 +11,7 @@ add_library(wavtool_core
     src/AudioClip.cpp
     src/WavFile.cpp 
     src/AudioProcessor.cpp
+    src/WaveFormGenerator.cpp
 )
 
 # Anyone using wavtool_core can include headers from /include

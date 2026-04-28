@@ -3,49 +3,39 @@
 #include "wavtool/AudioClip.h"
 #include "wavtool/WavFile.h"
 #include "wavtool/AudioProcessor.h"
-
+#include "wavtool/WaveformGenerator.h"
 
 
 
 int main() {
-    try {
-        std::filesystem::path input = "test_assets/tokyo-rain.wav";
+try {
+std::filesystem::path input = "test_assets/tokyo-rain.wav";
 
-        auto clip = wavtool::WavFile::load(input);
-        auto normalized = wavtool::AudioProcessor::normalize(clip);
+    auto clip = wavtool::WavFile::load(input);
 
-        std::filesystem::create_directories("test_output");
+    size_t requestedColumns = 1000;
 
-        std::filesystem::path output = "test_output";
-        output /= normalized.getName();
+    auto waveform = wavtool::WaveformGenerator::generate(clip, requestedColumns);
 
-        wavtool::WavFile::save(normalized, output);
+    std::cout << "Requested columns: " << requestedColumns << "\n";
+    std::cout << "Actual columns: " << waveform.size() << "\n\n";
 
-        int maxAbs = 0;
+    std::cout << "First 10 waveform points:\n";
 
-        for (auto sample : normalized.getLeft()) {
-            maxAbs = std::max(maxAbs, std::abs(static_cast<int>(sample)));
-        }
-
-        if (normalized.isStereo()) {
-            for (auto sample : normalized.getRight()) {
-                maxAbs = std::max(maxAbs, std::abs(static_cast<int>(sample)));
-            }
-        }
-
-        std::cout << "Loaded: " << clip.getName() << "\n";
-        std::cout << "Normalized name: " << normalized.getName() << "\n";
-        std::cout << "Original duration: " << clip.getDurationSeconds() << "\n";
-        std::cout << "Normalized duration: " << normalized.getDurationSeconds() << "\n";
-        std::cout << "Original frames: " << clip.getFrameCount() << "\n";
-        std::cout << "Normalized frames: " << normalized.getFrameCount() << "\n";
-        std::cout << "Max absolute amplitude after normalize: " << maxAbs << "\n";
-        std::cout << "Saved to: " << output << "\n";
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-        return 1;
+    for (size_t i = 0; i < 10 && i < waveform.size(); i++) {
+        std::cout << "Column " << i
+                  << " | Min: " << waveform[i].minAmp
+                  << " | Max: " << waveform[i].maxAmp
+                  << "\n";
     }
 
-    return 0;
+    std::cout << "\nDone.\n";
+}
+catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+}
+
+return 0;
+
 }

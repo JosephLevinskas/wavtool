@@ -4,10 +4,8 @@
 #include <vector>
 #include "wavtool/AudioClip.h"
 
-
-
 namespace wavtool {
-    
+
 struct WaveformPoint {
     int16_t maxAmp;
     int16_t minAmp;
