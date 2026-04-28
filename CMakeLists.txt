@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(wavtool_core 
     src/AudioClip.cpp
     src/WavFile.cpp 
+    src/AudioProcessor.cpp
 )
 
 # Anyone using wavtool_core can include headers from /include
