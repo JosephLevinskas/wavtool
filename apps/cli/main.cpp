@@ -7,37 +7,43 @@
 
 
 int main() {
-    try {
-        std::filesystem::path input = "test_assets/tokyo-rain.wav";
+try {
+std::filesystem::path input = "test_assets/tokyo-rain.wav";
 
-        auto clip = wavtool::WavFile::load(input);
+    auto clip = wavtool::WavFile::load(input);
 
-        auto reversed = wavtool::AudioProcessor::reverse(clip);
+    // Trim from 2s to 5s
+    double start = 2.0;
+    double end = 5.0;
 
-        std::filesystem::create_directories("test_output");
+    auto trimmed = wavtool::AudioProcessor::trim(clip, start, end);
 
-        std::filesystem::path output = "test_output";
-        output /= reversed.getName();
+    std::filesystem::create_directories("test_output");
 
-        wavtool::WavFile::save(reversed, output);
+    std::filesystem::path output = "test_output";
+    output /= trimmed.getName();
 
-        std::cout << "Loaded: " << clip.getName() << "\n";
-        std::cout << "Reversed name: " << reversed.getName() << "\n";
-        std::cout << "Saved to: " << output << "\n";
+    wavtool::WavFile::save(trimmed, output);
 
-        std::cout << "Original first left sample: "
-                  << clip.getLeft().front() << "\n";
+    std::cout << "Original duration: " << clip.getDurationSeconds() << "\n";
+    std::cout << "Trimmed duration: " << trimmed.getDurationSeconds() << "\n";
 
-        std::cout << "Reversed first left sample: "
-                  << reversed.getLeft().front() << "\n";
+    std::cout << "Original frames: " << clip.getFrameCount() << "\n";
+    std::cout << "Trimmed frames: " << trimmed.getFrameCount() << "\n";
 
-        std::cout << "Original last left sample: "
-                  << clip.getLeft().back() << "\n";
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-        return 1;
-    }
+    std::cout << "Trimmed first sample (L): "
+              << trimmed.getLeft().front() << "\n";
 
-    return 0;
+    std::cout << "Trimmed last sample (L): "
+              << trimmed.getLeft().back() << "\n";
+
+    std::cout << "Saved to: " << output << "\n";
+}
+catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+}
+
+return 0;
+
 }
