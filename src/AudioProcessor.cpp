@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <cstdint>
 #include <stdexcept>
+#include <cmath>
 
 namespace wavtool {
     AudioClip AudioProcessor::reverse(const AudioClip& clip) {
@@ -77,6 +78,93 @@ namespace wavtool {
                                     clip.getOriginalFilePath());
         
         return newClip;
+
+    }
+
+    AudioClip AudioProcessor::normalize(const AudioClip& clip) {
+        const auto& left = clip.getLeft();
+        const auto& right = clip.getRight();
+
+        int maxAbs = 0;
+
+        for (size_t i = 0; i < left.size(); i++) {
+            int magnitude = std::abs(static_cast<int>(left[i]));
+            if (magnitude > maxAbs) {
+                maxAbs = magnitude;
+            }
+        }
+        if (clip.isStereo()) {
+            for (size_t i = 0; i < right.size(); i++) {
+                int magnitude = std::abs(static_cast<int>(right[i]));
+                if (magnitude > maxAbs) {
+                    maxAbs = magnitude;
+                }
+            }
+        }
+
+        if (maxAbs == 0) {
+            std::filesystem::path p = clip.getName();
+
+            std::string newName =
+                p.stem().string() + "_normalized_no_change" + p.extension().string();
+                
+            AudioClip newClip = AudioClip(clip.getAudioFormat(),
+                                    clip.getChannelCount(),
+                                    clip.getSampleRate(),
+                                    clip.getByteRate(),
+                                    clip.getBlockAlign(),
+                                    clip.getBitDepth(),
+                                    left,
+                                    right,
+                                    newName,
+                                    clip.getOriginalFilePath());
+            return newClip;
+        }
+
+        double scale = 32767.0 / maxAbs;
+        std::vector<int16_t> newLeft(left.size());
+        std::vector<int16_t> newRight;
+
+        for (size_t i = 0; i < left.size(); i++) {
+            double tempNewLeft = left[i] * scale;
+            if (tempNewLeft > 32767) {
+                tempNewLeft = 32767;
+            }
+            else if (tempNewLeft < -32768) {
+                tempNewLeft = -32768;
+            }
+            newLeft[i] = int16_t(std::round(tempNewLeft));
+        }
+        if (clip.isStereo()) {
+            newRight.resize(right.size()); 
+            for (size_t i = 0; i < right.size(); i++) {
+                double tempNewRight = right[i] * scale;
+                if (tempNewRight > 32767) {
+                    tempNewRight = 32767;
+                }
+                else if (tempNewRight < -32768) {
+                    tempNewRight = -32768;
+                }
+                newRight[i] = int16_t(std::round(tempNewRight));
+            }
+        }
+
+        std::filesystem::path p = clip.getName();
+
+            std::string newName =
+                p.stem().string() + "_normalized" + p.extension().string();
+                
+            AudioClip newClip = AudioClip(clip.getAudioFormat(),
+                                    clip.getChannelCount(),
+                                    clip.getSampleRate(),
+                                    clip.getByteRate(),
+                                    clip.getBlockAlign(),
+                                    clip.getBitDepth(),
+                                    newLeft,
+                                    newRight,
+                                    newName,
+                                    clip.getOriginalFilePath());
+            return newClip;
 
     }
 }
