@@ -109,7 +109,7 @@ static void writeBmp(const std::filesystem::path& outputPath, const std::vector<
 
         file.write(reinterpret_cast<const char*>(paddingBytes), padding);
     }
-
+    file.close();
 }
 
 void Renderer::saveWaveformBmp(const std::vector<WaveformPoint> &waveform, size_t height, RgbColor chosenColor, 

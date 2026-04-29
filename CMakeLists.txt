@@ -76,3 +76,12 @@ add_executable(waveform_generator_tests
 target_link_libraries(waveform_generator_tests
     PRIVATE wavtool_core
 )
+
+# Testing Renderer 
+add_executable(renderer_tests
+    tests/RendererTests.cpp
+)
+
+target_link_libraries(renderer_tests
+    PRIVATE wavtool_core
+)
