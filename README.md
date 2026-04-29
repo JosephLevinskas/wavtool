@@ -1,149 +1,225 @@
 # WavTool
 
-A C++ audio processing tool for working with WAV files, built from scratch with a focus on clean architecture, manual binary parsing, and performance awareness.
+A production-focused C++ audio processing tool for working with WAV files, built from scratch with clean architecture, manual binary parsing, and performance-aware design.
 
 ## Features
 
 Core:
-- Manual parsing of WAV files (16-bit PCM only)
-- Full RIFF/WAVE chunk handling (fmt, data, unknown chunks)
+- Manual parsing of WAV files
+- Supports 16-bit PCM WAV files
+- Supports mono and stereo audio
+- Full RIFF/WAVE chunk handling:
+  - RIFF header
+  - fmt chunk
+  - data chunk
+  - unknown chunks
 - Metadata extraction:
   - Sample rate
-  - Channel count (mono/stereo)
+  - Channel count
   - Bit depth
   - Duration
-- Validation of WAV structure
+  - Frame count
+- Strict validation of audio structure
 
 Audio Processing:
-- Reverse audio (implemented)
-- Trim audio by time range (planned)
-- Normalize audio (planned)
+- Reverse audio
+- Trim audio by time range
+- Normalize audio amplitude
+- Immutable-style processing:
+  - Processing functions return new AudioClip objects
 
 File I/O:
 - Load WAV files into AudioClip
 - Save AudioClip to valid WAV file
-- Correct stereo interleaving (L R L R)
-- Full round-trip support (load -> save -> reload)
+- Correct stereo interleaving:
+  - L R L R
+- Full round-trip support:
+  - load -> save -> reload
 
-Visualization (planned):
-- Waveform generation (min/max per column)
-- Zoom support (time to sample mapping)
+Visualization:
+- Waveform generation
+- Min/max amplitude per column
+- Stereo-aware waveform generation
+- Renderer:
+  - Converts waveform data to a pixel buffer
+  - Maps amplitude to image coordinates
+  - Draws waveform columns
+  - Draws center line
+  - Applies gradient coloring
+  - Writes valid 24-bit BMP files
 
 Applications:
-- CLI interface (working)
-- GUI waveform editor (planned)
+- CLI interface
+- GUI waveform editor planned
 
 ## Architecture
 
 wavtool_core:
-- AudioClip: validated audio data model
-- WavFile: WAV parsing and writing
-- AudioProcessor: editing operations
-- WaveformGenerator: visualization data (planned)
-- Renderer: rendering (planned)
+- AudioClip:
+  - Validated audio data model
+  - Owns left/right sample vectors
+  - Stores clip name and original file path
+- WavFile:
+  - Loads WAV files
+  - Saves WAV files
+  - Handles binary WAV format details
+- AudioProcessor:
+  - Reverse
+  - Trim
+  - Normalize
+- WaveformGenerator:
+  - Converts AudioClip data into drawable waveform min/max points
+- Renderer:
+  - Converts waveform points into BMP output
+- Library:
+  - Stores and manages saved file paths
+- ProjectState:
+  - Early project-state layer
+- ProjectSerializer:
+  - Early project persistence layer
 
 apps:
-- cli: command-line interface
-- gui: planned GUI application
+- cli:
+  - Command-line application entry point
+- gui:
+  - Planned GUI application
 
 tests:
 - AudioClipTests.cpp
+- AudioProcessorTests.cpp
 - WavFileTests.cpp
+- WaveformGeneratorTests.cpp
+- RendererTests.cpp
 
 ## Design Principles
 
 - Validated data model:
-  AudioClip guarantees correctness at construction (format, sizes, alignment)
+  - AudioClip guarantees correctness at construction
 
 - Separation of concerns:
-  Parsing, processing, and rendering are independent
+  - AudioClip stores data
+  - WavFile handles file format I/O
+  - AudioProcessor transforms audio
+  - WaveformGenerator prepares visual data
+  - Renderer outputs images
 
-- Immutable-style processing:
-  Operations return new AudioClip instances
+- Immutable-style editing:
+  - Audio edits return new AudioClip objects instead of mutating the original
 
 - Manual binary parsing:
-  No external libraries for WAV handling
+  - No external WAV parsing libraries
 
-- Performance awareness:
-  Uses std::chrono for profiling and compares Debug vs Release builds
+- Testable pipeline:
+  - Audio data, processing, waveform generation, and rendering are tested separately
 
 - CMake-based build system
 
 ## Build
 
+```bash
 cmake -S . -B build
 cmake --build build
+```
 
-Release build (recommended):
+Release build:
 
+```bash
 cmake --build build --config Release
+```
 
 ## Run CLI
 
+```bash
 build/Debug/wavtool_cli
+```
 
-or
+or:
 
+```bash
 build/Release/wavtool_cli
+```
 
 ## Run Tests
 
+```bash
 build/Debug/wavtool_tests
-build/Debug/wav_file_tests
+```
 
 ## Testing
 
-- Assertion-based test system
-- Round-trip validation:
-  load -> save -> reload
-- Error handling tests for invalid files
+Current test coverage includes:
+
+- AudioClip validation
+- WAV load behavior
+- WAV save behavior
+- Load -> save -> reload round-trip behavior
+- AudioProcessor behavior:
+  - reverse
+  - trim
+  - normalize
+- WaveformGenerator behavior:
+  - column count validation
+  - min/max generation
+  - mono/stereo behavior
+- Renderer behavior:
+  - BMP header validation
+  - invalid input handling
+  - center line rendering
+  - waveform pixel generation
 
 Test folders:
+
+```text
 test_assets/
-test_output/ (ignored)
-
-## Performance
-
-Tested on approximately 46 MB WAV file:
-
-Load:
-- Debug: about 3.6 seconds
-- Release: about 0.7 seconds
-
-Load + Save + Reload:
-- Debug: about 10 seconds
-- Release: about 2.8 seconds
-
-Primary costs:
-- Disk I/O
-- Sample processing loops
-- Memory copies
+test_output/
+```
 
 ## Current Status
 
-- AudioClip implementation complete
-- WavFile load complete
-- WavFile save complete
-- Reverse processing complete
-- CLI testing working
-- Trim not implemented
-- Normalize not implemented
-- Waveform generation not implemented
-- GUI not started
+Complete:
+- AudioClip
+- WavFile load
+- WavFile save
+- AudioProcessor reverse
+- AudioProcessor trim
+- AudioProcessor normalize
+- WaveformGenerator
+- Renderer BMP output
+- CLI entry point
+- Core test suite
+
+In progress:
+- ProjectState
+- ProjectSerializer
+- Application-level project management
+
+Not started:
+- Undo/redo project history
+- Full App class
+- GUI
 
 ## Roadmap
 
 Short term:
-- Implement trim (time to sample conversion)
-- Implement normalize (amplitude scaling)
-- Add waveform generation
-- Improve test coverage
+- Design Project class
+- Add undo/redo using full AudioClip snapshots
+- Integrate Project with AudioProcessor
+- Clean up ProjectState and ProjectSerializer roles
+
+Mid term:
+- Build App class for CLI command flow
+- Add project saving/loading
+- Improve renderer output quality
+- Add thicker waveform lines
+- Add better error handling
 
 Long term:
 - Build GUI waveform editor
-- Add zoom and timeline interaction
-- Add additional audio effects
-- Support more file formats
+- Add waveform zooming
+- Add scrubbing/timeline interaction
+- Add export workflow
+- Add more audio effects
+- Support more audio formats
 
 ## License
 
