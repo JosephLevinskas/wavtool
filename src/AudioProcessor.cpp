@@ -52,10 +52,10 @@ namespace wavtool {
         }
 
         std::vector<int16_t> newLeft(left.begin() + startFrame, left.begin() + endFrame);
-        std::vector<int16_t> newRight(endFrame - startFrame);
+        std::vector<int16_t> newRight;
         
         if (clip.isStereo()) {
-            newRight.resize(endFrame - startFrame);
+            newRight = std::vector<int16_t>(right.begin() + startFrame, right.begin() + endFrame);
             auto start = right.begin() + startFrame;
             auto end = right.begin() + endFrame;
             std::copy(start, end, newRight.begin());
