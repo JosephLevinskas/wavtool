@@ -1,87 +1,109 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Final-Wav-Project LANGUAGES CXX)
+project(WavTool LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Core library
-# Creates library target which is reusable
-add_library(wavtool_core 
+add_library(wavtool_core
     src/AudioClip.cpp
-    src/WavFile.cpp 
+    src/WavFile.cpp
     src/AudioProcessor.cpp
-    src/WaveFormGenerator.cpp
+    src/WaveformGenerator.cpp
     src/Renderer.cpp
+    src/Library.cpp
+    src/ProjectState.cpp
+    src/ProjectSerializer.cpp
 )
 
-# Anyone using wavtool_core can include headers from /include
-target_include_directories(wavtool_core 
-    PUBLIC include 
+target_include_directories(wavtool_core
+    PUBLIC
+        include
 )
 
-
-
-# CLI app 
-# Creates the executable file .exe
-add_executable(wavtool_cli 
-    apps/cli/main.cpp 
+# CLI app
+add_executable(wavtool_cli
+    apps/cli/main.cpp
 )
 
-# Connects the executable and core library
-# wavtool_cli uses wavtool_core
-target_link_libraries(wavtool_cli 
-    PRIVATE wavtool_core 
+target_link_libraries(wavtool_cli
+    PRIVATE
+        wavtool_core
 )
 
+# Tests
+enable_testing()
 
-
-# make executable to test audioClip class from
 add_executable(audio_clip_tests
     tests/AudioClipTests.cpp
 )
-# link so wavtool_tests can access code library
+
 target_link_libraries(audio_clip_tests
-    PRIVATE wavtool_core
+    PRIVATE
+        wavtool_core
 )
 
-
-
-# Testing exe for wav file save and load 
 add_executable(wav_file_tests
     tests/WavFileTests.cpp
 )
-# link to wav testing
+
 target_link_libraries(wav_file_tests
-    PRIVATE wavtool_core
+    PRIVATE
+        wavtool_core
 )
 
-
-
-# Testing audioprocessor file
 add_executable(audio_processor_tests
     tests/AudioProcessorTests.cpp
 )
 
 target_link_libraries(audio_processor_tests
-    PRIVATE wavtool_core
+    PRIVATE
+        wavtool_core
 )
 
-
-# Testing waveform generator function
 add_executable(waveform_generator_tests
     tests/WaveformGeneratorTests.cpp
 )
 
 target_link_libraries(waveform_generator_tests
-    PRIVATE wavtool_core
+    PRIVATE
+        wavtool_core
 )
 
-# Testing Renderer 
 add_executable(renderer_tests
     tests/RendererTests.cpp
 )
 
 target_link_libraries(renderer_tests
-    PRIVATE wavtool_core
+    PRIVATE
+        wavtool_core
+)
+
+
+add_test(NAME audio_clip_tests COMMAND audio_clip_tests)
+add_test(NAME wav_file_tests COMMAND wav_file_tests)
+add_test(NAME audio_processor_tests COMMAND audio_processor_tests)
+add_test(NAME waveform_generator_tests COMMAND waveform_generator_tests)
+add_test(NAME renderer_tests COMMAND renderer_tests)
+
+set_tests_properties(audio_clip_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set_tests_properties(wav_file_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set_tests_properties(audio_processor_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set_tests_properties(waveform_generator_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set_tests_properties(renderer_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
