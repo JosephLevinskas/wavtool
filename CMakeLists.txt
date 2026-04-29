@@ -12,6 +12,7 @@ add_library(wavtool_core
     src/WavFile.cpp 
     src/AudioProcessor.cpp
     src/WaveFormGenerator.cpp
+    src/Renderer.cpp
 )
 
 # Anyone using wavtool_core can include headers from /include
@@ -67,7 +68,7 @@ target_link_libraries(audio_processor_tests
 )
 
 
-
+# Testing waveform generator function
 add_executable(waveform_generator_tests
     tests/WaveformGeneratorTests.cpp
 )

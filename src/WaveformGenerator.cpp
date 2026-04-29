@@ -23,7 +23,7 @@ namespace wavtool {
 
         for (size_t i = 0; i < actualColumnCount; i++) {
             size_t startFrame = i * frameCount / actualColumnCount;
-            size_t endFrame = (i + 1) * frameCount / actualColumnCount;
+            size_t endFrame = ((i + 1) * frameCount / actualColumnCount);
             int16_t max = left[startFrame];
             int16_t min = left[startFrame];
 
