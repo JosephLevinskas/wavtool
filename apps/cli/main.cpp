@@ -1,48 +1,140 @@
-#include <iostream>
-#include <vector>
-#include "wavtool/AudioClip.h"
 #include "wavtool/WavFile.h"
 #include "wavtool/AudioProcessor.h"
 #include "wavtool/WaveformGenerator.h"
 #include "wavtool/Renderer.h"
 
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
 
+namespace {
+
+template <typename Func>
+auto timeStep(const std::string& label, Func&& func) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto result = func();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << label << ": " << ms << " ms\n";
+
+    return result;
+}
+
+void timeVoidStep(const std::string& label, const auto& func) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    func();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << label << ": " << ms << " ms\n";
+}
+
+void printClipInfo(const wavtool::AudioClip& clip) {
+    std::cout << "\nClip info\n";
+    std::cout << "Name: " << clip.getName() << '\n';
+    std::cout << "Original path: " << clip.getOriginalFilePath() << '\n';
+    std::cout << "Channels: " << clip.getChannelCount() << '\n';
+    std::cout << "Sample rate: " << clip.getSampleRate() << '\n';
+    std::cout << "Bit depth: " << clip.getBitDepth() << '\n';
+    std::cout << "Frame count: " << clip.getFrameCount() << '\n';
+    std::cout << "Duration: " << clip.getDurationSeconds() << " seconds\n";
+}
+
+} // namespace
 
 int main() {
     try {
-        std::cout << "Loading WAV file...\n";
+        std::filesystem::path inputPath = "test_assets/tokyo-rain.wav";
+        std::filesystem::path outputDir = "test_output";
 
-        // 1. Load audio
-        wavtool::AudioClip clip = wavtool::WavFile::load("test_assets/tokyo-rain.wav");
+        std::filesystem::create_directories(outputDir);
 
-        std::cout << "Generating waveform...\n";
+        std::filesystem::path copyPath = outputDir / "stress_copy.wav";
+        std::filesystem::path reversedPath = outputDir / "stress_reversed.wav";
+        std::filesystem::path trimmedPath = outputDir / "stress_trimmed.wav";
+        std::filesystem::path normalizedPath = outputDir / "stress_normalized.wav";
+        std::filesystem::path renderedPath = outputDir / "stress_waveform.bmp";
 
-        // 2. Generate waveform (choose width)
-        size_t width = 1000;
-        auto waveform = wavtool::WaveformGenerator::generate(clip, width);
+        std::cout << "Starting WavTool stress test\n\n";
 
-        std::cout << "Rendering BMP...\n";
+        auto clip = timeStep("Load original WAV", [&] {
+            return wavtool::WavFile::load(inputPath);
+        });
 
-        // 3. Choose color (blue-ish)
-        wavtool::RgbColor color{0, 100, 255};
+        printClipInfo(clip);
 
-        // 4. Choose height (your design rule)
-        size_t height = waveform.size() / 4;
+        timeVoidStep("Save copy WAV", [&] {
+            wavtool::WavFile::save(clip, copyPath);
+        });
 
-        // 5. Render output
-        wavtool::Renderer::saveWaveformBmp(
-            waveform,
-            height,
-            color,
-            "test_output/testoutput.bmp"
-        );
+        auto copiedClip = timeStep("Reload copied WAV", [&] {
+            return wavtool::WavFile::load(copyPath);
+        });
 
-        std::cout << "SUCCESS: Output saved to testoutput.bmp\n";
+        auto reversedClip = timeStep("Reverse audio", [&] {
+            return wavtool::AudioProcessor::reverse(copiedClip);
+        });
 
+        timeVoidStep("Save reversed WAV", [&] {
+            wavtool::WavFile::save(reversedClip, reversedPath);
+        });
+
+        double trimStart = 10.0;
+        double trimEnd = 40.0;
+
+        if (clip.getDurationSeconds() < trimEnd) {
+            trimStart = 0.0;
+            trimEnd = clip.getDurationSeconds() / 2.0;
+        }
+
+        auto trimmedClip = timeStep("Trim audio", [&] {
+            return wavtool::AudioProcessor::trim(clip, trimStart, trimEnd);
+        });
+
+        timeVoidStep("Save trimmed WAV", [&] {
+            wavtool::WavFile::save(trimmedClip, trimmedPath);
+        });
+
+        auto normalizedClip = timeStep("Normalize audio", [&] {
+            return wavtool::AudioProcessor::normalize(clip);
+        });
+
+        timeVoidStep("Save normalized WAV", [&] {
+            wavtool::WavFile::save(normalizedClip, normalizedPath);
+        });
+
+        auto waveform = timeStep("Generate waveform", [&] {
+            return wavtool::WaveformGenerator::generate(clip, 3000);
+        });
+
+        timeVoidStep("Render waveform BMP", [&] {
+            wavtool::Renderer::saveWaveformBmp(
+                waveform,
+                800,
+                wavtool::RgbColor{0, 120, 255},
+                renderedPath
+            );
+        });
+
+        auto finalReload = timeStep("Reload normalized WAV", [&] {
+            return wavtool::WavFile::load(normalizedPath);
+        });
+
+        printClipInfo(finalReload);
+
+        std::cout << "\nStress test complete\n";
+        std::cout << "Outputs written to: " << outputDir << '\n';
+
+        return 0;
     } catch (const std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        std::cerr << "\nStress test failed: " << e.what() << '\n';
         return 1;
     }
-
-    return 0;
 }
