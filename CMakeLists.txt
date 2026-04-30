@@ -16,6 +16,7 @@ add_library(wavtool_core
     src/Library.cpp
     src/Project.cpp
     src/ProjectSerializer.cpp
+    src/App.cpp
 )
 
 target_include_directories(wavtool_core
