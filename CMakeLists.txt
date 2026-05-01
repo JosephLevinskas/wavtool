@@ -91,12 +91,22 @@ target_link_libraries(project_tests
         wavtool_core
 )
 
+add_executable(app_tests
+    tests/AppTests.cpp
+)
+
+target_link_libraries(app_tests
+    PRIVATE
+        wavtool_core
+)
+
 add_test(NAME audio_clip_tests COMMAND audio_clip_tests)
 add_test(NAME wav_file_tests COMMAND wav_file_tests)
 add_test(NAME audio_processor_tests COMMAND audio_processor_tests)
 add_test(NAME waveform_generator_tests COMMAND waveform_generator_tests)
 add_test(NAME renderer_tests COMMAND renderer_tests)
 add_test(NAME project_tests COMMAND project_tests)
+add_test(NAME app_tests COMMAND app_tests)
 
 set_tests_properties(audio_clip_tests PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -119,5 +129,9 @@ set_tests_properties(renderer_tests PROPERTIES
 )
 
 set_tests_properties(project_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set_tests_properties(app_tests PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )

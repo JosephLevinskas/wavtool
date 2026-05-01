@@ -10,6 +10,8 @@ public:
 private:
     Project project;
 
+    bool running = true;
+
     void printHelp() const;
     void handleCommand(const std::string& line);
 
@@ -24,4 +26,4 @@ private:
     void printCurrentInfo() const;
 };
 
-} // namespace wavtool
+} 
